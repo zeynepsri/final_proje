@@ -389,6 +389,7 @@ public class Main extends JFrame implements ActionListener {
 
                         if(zipButtonKontrol==true) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
+                            islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
@@ -412,7 +413,7 @@ public class Main extends JFrame implements ActionListener {
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "Pdf Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "PDF Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
                     throw new RuntimeException(ex);
@@ -426,7 +427,7 @@ public class Main extends JFrame implements ActionListener {
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
                     zipButtonKontrol = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "Pdf Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "PDF Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -445,6 +446,7 @@ public class Main extends JFrame implements ActionListener {
 
                         if(zipButtonKontrol==true) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
+                            islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
@@ -482,7 +484,7 @@ public class Main extends JFrame implements ActionListener {
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
                     zipButtonKontrol = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "Doc Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "DOC Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -501,6 +503,7 @@ public class Main extends JFrame implements ActionListener {
 
                         if(zipButtonKontrol==true) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
+                            islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
@@ -524,7 +527,7 @@ public class Main extends JFrame implements ActionListener {
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "Txt Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "TXT Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
                     throw new RuntimeException(ex);
@@ -538,7 +541,7 @@ public class Main extends JFrame implements ActionListener {
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
                     zipButtonKontrol = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "Txt Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "TXT Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -557,11 +560,12 @@ public class Main extends JFrame implements ActionListener {
 
                         if(zipButtonKontrol==true) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
+                            islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
-                        JOptionPane.showMessageDialog(this, "DOC Dosyaları taşıma başarılı!");
+                        JOptionPane.showMessageDialog(this, "TXT Dosyaları taşıma başarılı!");
                     }
 
                     else {
@@ -580,7 +584,7 @@ public class Main extends JFrame implements ActionListener {
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "Png Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "PNG Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
                     throw new RuntimeException(ex);
@@ -594,7 +598,7 @@ public class Main extends JFrame implements ActionListener {
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
                     zipButtonKontrol = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "Png Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "PNG Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -610,14 +614,14 @@ public class Main extends JFrame implements ActionListener {
             else if (e.getActionCommand().equals("Taşı")) {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
-
                         if(zipButtonKontrol==true) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
+                            islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
                         }
-                        JOptionPane.showMessageDialog(this, "DOC Dosyaları taşıma başarılı!");
+                        JOptionPane.showMessageDialog(this, "PNG Dosyaları taşıma başarılı!");
                     }
 
                     else {
