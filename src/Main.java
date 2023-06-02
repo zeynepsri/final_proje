@@ -18,7 +18,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,38 +42,17 @@ class DosyaTipiBelirleme {
         }
         return tumDosyaYollari; //En başta oluşturulmuş olan istenen uzantılı dosyalar listesini List<String> tipinde return eder.
     }
-    //TXT DOSYALARI SEÇEN FONKSİYON
-    public List<String> txtDosya(String kaynakKlasorYolu) {
-        List<String> txtDosyaYollari = new ArrayList<>();
-        File kaynakKlasor = new File(kaynakKlasorYolu);
-
-        if (kaynakKlasor.exists() && kaynakKlasor.isDirectory()) {
-            File[] txtDosyalar = kaynakKlasor.listFiles();
-            if(txtDosyalar!=null) {
-                for (File txtDosyaDizisi : txtDosyalar) {
-                    if (txtDosyaDizisi.isFile() && txtDosyaDizisi.getName().endsWith(".txt")) {
-                        //Dosya yolunun adı alınarak istenen uzantı ile bitip bitmediği kontrol edilir.
-                        txtDosyaYollari.add(txtDosyaDizisi.getAbsolutePath());
-                    }
-                }
-            }
-            else {
-                System.out.println("Klasör bulunamadı.");
-            }
-        }
-        return txtDosyaYollari;
-    }
-    //PDF DOSYALARI SEÇEN FONKSİYON
-    public List<String> pdfDosya(String kaynakKlasorYolu) {
-        List<String> pdfDosyaYollari = new ArrayList<>();
+    //İSTENEN UZANTILI DOSYALARI SEÇEN FONKSİYON
+    public List<String> dosyaTipiSecme(String kaynakKlasorYolu,String tip) {
+        List<String> istenenDosyaYollari = new ArrayList<>();
         File kaynakKlasor = new File(kaynakKlasorYolu);
 
         if (kaynakKlasor.exists() && kaynakKlasor.isDirectory()) {
             File[] pdfDosyalar = kaynakKlasor.listFiles();
             if(pdfDosyalar!=null) {
                 for (File pdfDosyaDizisi : pdfDosyalar) {
-                    if (pdfDosyaDizisi.isFile() && pdfDosyaDizisi.getName().endsWith(".pdf")) {
-                        pdfDosyaYollari.add(pdfDosyaDizisi.getAbsolutePath());
+                    if (pdfDosyaDizisi.isFile() && pdfDosyaDizisi.getName().endsWith(tip)) {
+                        istenenDosyaYollari.add(pdfDosyaDizisi.getAbsolutePath());
                     }
                 }
             }
@@ -82,48 +60,7 @@ class DosyaTipiBelirleme {
                 System.out.println("Klasör bulunamadı.");
             }
         }
-        return pdfDosyaYollari;
-    }
-    //DOC DOSYALARI SEÇEN FONKSİYON
-    public List<String> docDosya(String kaynakKlasorYolu) {
-        List<String> docDosyaYollari = new ArrayList<>();
-        File kaynakKlasor = new File(kaynakKlasorYolu);
-
-        if (kaynakKlasor.exists() && kaynakKlasor.isDirectory()) {
-            File[] docDosyalar = kaynakKlasor.listFiles();
-            if(docDosyalar!=null) {
-                for (File docDosyaDizisi : docDosyalar) {
-                    if (docDosyaDizisi.isFile() && docDosyaDizisi.getName().endsWith(".docx")) {
-                        //NOT:Bizde .docx yazdığından bu şekilde yaptık ancak farklı olması durumunda buradan ayarlanabilir.
-                        docDosyaYollari.add(docDosyaDizisi.getAbsolutePath());
-                    }
-                }
-            }
-            else {
-                System.out.println("Klasör bulunamadı.");
-            }
-        }
-        return docDosyaYollari;
-    }
-    //PNG DOSYALARI SEÇEN FONKSİYON
-    public List<String> pngDosya(String kaynakKlasorYolu) {
-        List<String> pngDosyaYollari = new ArrayList<>();
-        File kaynakKlasor = new File(kaynakKlasorYolu);
-
-        if (kaynakKlasor.exists() && kaynakKlasor.isDirectory()) {
-            File[] pngDosyalar = kaynakKlasor.listFiles();
-            if(pngDosyalar!=null) {
-                for (File pngDosyaDizisi : pngDosyalar) {
-                    if (pngDosyaDizisi.isFile() && pngDosyaDizisi.getName().endsWith(".png")) {
-                        pngDosyaYollari.add(pngDosyaDizisi.getAbsolutePath());
-                    }
-                }
-            }
-            else {
-                System.out.println("Klasör bulunamadı.");
-            }
-        }
-        return pngDosyaYollari;
+        return istenenDosyaYollari;
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -179,26 +116,42 @@ class DosyaIslemleri {
         }
     }
 
+    //ŞİFRE ÇÖZÜMLEME İŞLEMİNİ GERÇEKLEŞTİREN FONKSİYON.
+    public void sifreCoz(List<String> sifreliDosyalar) throws IOException, NoSuchPaddingException,
+            NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+
+        try {
+            for (String dosyaYolu : sifreliDosyalar) {
+                byte[] sifreBytes = Sifre.getBytes();
+                SecretKeySpec sifreFormati = new SecretKeySpec(sifreBytes, Algoritma);
+                Cipher sifreCozme = Cipher.getInstance(Algoritma);
+                sifreCozme.init(Cipher.DECRYPT_MODE, sifreFormati);
+
+                Path dosyaPath = Paths.get(dosyaYolu);
+                byte[] sifreliIcerik = Files.readAllBytes(dosyaPath);
+                byte[] cozulmusIcerik = sifreCozme.doFinal(sifreliIcerik);
+                Files.write(dosyaPath, cozulmusIcerik);
+            }
+            System.out.println("Dosya şifresi başarıyla çözüldü.");
+        } catch (Exception e) {
+            System.out.println("Bir hata oluştu: " + e.getMessage());
+        }
+    }
+
     //DOSYA GİZLEME İŞLEMİNİ GERÇEKLEŞTİREN FONKSİYON.
     public void dosyaGizleme(List<String> gizlenecekDosyalar) throws IOException {
         String[] gizlenecekDosyaYollari = gizlenecekDosyalar.toArray(new String[0]);
         for(String dosyaYolu : gizlenecekDosyaYollari) {
             Path dosyaPath = Paths.get(dosyaYolu);
             Files.setAttribute(dosyaPath, "dos:hidden", true);
-            //setAttribute() methodu ile belirtilen dosya yolunun gizli(hidden) özelliği true yapılarak dosya gizlenir.
+            /*setAttribute() methodu ile belirtilen dosya yolunun gizli(hidden) özelliği true yapılarak dosya gizlenir.
+            Not: Windows'a göre ayarlandı!*/
         }
         System.out.println("Dosya gizleme işlemi başarıyla gerçekleştirildi.");
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
 class ZipIslemleri {
-    //OLUŞTURULACAK ZİP DOSYASINI İSİMLENDİRMEYİ SAĞLAYAN FONKSİYON.
-    public String zipIsimlendirme() {
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz: ");
-        String zipDosyaAdi = scan.nextLine(); //(İSİM KULLANICIDAN ALINIR.)
-        return zipDosyaAdi;
-    }
 
     //DOSYALARI ZİPLEME İŞLEMİNİ GERÇEKLEŞTİREN FONKSİYON.
     public void dosyaZipleme(String zipDosyaAdi, List<String> ziplenecekDosyalar, String kaynakKlasorYolu) {
@@ -246,23 +199,24 @@ class ZipIslemleri {
             Path zipPath = Path.of(zipYol);
             Path hedefPath = Path.of(hedefKlasorYolu, zipPath.getFileName().toString());
             Files.move(zipPath, hedefPath, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("ZIP file moved successfully.");
+            System.out.println("Zip dosyası taşıma işlemi başarıyla gerçekleştirildi.");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
-public class Main extends JFrame implements ActionListener {
+public class Main2 extends JFrame implements ActionListener {
     private JTextField kaynakDizinField, hedefDizinField;
     private JButton sifrele_button = new JButton("Şifrele");
+    private JButton sifrecoz_button = new JButton("Şifreyi Çöz");
     private JButton zip_button = new JButton("Sıkıştır");
     private JButton gizle_button = new JButton("Gizle");
     private JButton tasi_button = new JButton("Taşı");
     private ButtonGroup dosya_turu = new ButtonGroup();
     private JRadioButton tum, doc, png, pdf, txt;
 
-    public Main() {
+    public Main2() {
         // Frame ayarları
         setTitle("Dosya Taşıma");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -294,15 +248,16 @@ public class Main extends JFrame implements ActionListener {
         kaynakDizinField.setBounds(150, 20, 300, 25);
         hedefDizinLabel.setBounds(20, 60, 120, 25);
         hedefDizinField.setBounds(150, 60, 300, 25);
-        sifrele_button.setBounds(20, 160, 120, 25);
+        gizle_button.setBounds(20, 160, 120, 25);
         zip_button.setBounds(180, 160, 120, 25);
-        gizle_button.setBounds(340, 160, 120, 25);
+        sifrele_button.setBounds(340, 160, 120, 25);
+        sifrecoz_button.setBounds(500, 160, 120, 25);
+        tasi_button.setBounds(290, 220, 80, 25);
         tum.setBounds(20, 100, 150, 25);
         pdf.setBounds(180, 100, 80, 25);
         doc.setBounds(270, 100, 80, 25);
         txt.setBounds(360, 100, 80, 25);
         png.setBounds(450, 100, 80, 25);
-        tasi_button.setBounds(200, 220, 80, 25);
 
         // Arayüz bileşenlerini ekleme
         add(kaynakDizinLabel);
@@ -317,10 +272,12 @@ public class Main extends JFrame implements ActionListener {
         add(sifrele_button);
         add(zip_button);
         add(gizle_button);
+        add(sifrecoz_button);
         add(tasi_button);
 
         // ActionListener'ları ekleme
         sifrele_button.addActionListener(this);
+        sifrecoz_button.addActionListener(this);
         zip_button.addActionListener(this);
         gizle_button.addActionListener(this);
         tasi_button.addActionListener(this);
@@ -333,32 +290,47 @@ public class Main extends JFrame implements ActionListener {
         png.addActionListener(this);
 
         // Arayüzü gösterme
-        setSize(550, 300);
+        setSize(650, 300);
         setVisible(true);
     }
 
     String zipDosyaAdi;
-    boolean zipButtonKontrol = false;
+    boolean zipButtonKontrolTum, zipButtonKontrolPdf, zipButtonKontrolDoc,
+            zipButtonKontrolTxt, zipButtonKontrolPng = false;
     @Override
     public void actionPerformed(ActionEvent e) {
         String kaynakDizin = kaynakDizinField.getText();
         String hedefDizin = hedefDizinField.getText();
         File kaynak = new File(kaynakDizin);
         File hedef = new File(hedefDizin);
-        List<String> secilenDosyalar = null;
+        List<String> secilenDosyalar;
         DosyaTipiBelirleme tip = new DosyaTipiBelirleme();
         DosyaIslemleri islem = new DosyaIslemleri();
         ZipIslemleri zipIslm = new ZipIslemleri();
 
         if (tum.isSelected()) {
+            //isSelected() methodu ile istenen dosya tipinin arayüzde seçilip seçilmediği kontrol edilir.
             secilenDosyalar = tip.tumDosyalar(kaynakDizin);
 
             if (e.getActionCommand().equals("Şifrele")) {
+                //getActionCommand() ve equals() methodları ile istenen işlem butonuna arayüzde tıklanıp tıklanmadığı kontrol edilir.
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "Tüm Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "Tüm Dosyalar Şifrelendi.");
+                    /*JOptionPane sınıfından çağırılan showMessageDialog() methodu ile kullanıcıya işlemin sonuçlandığı
+                    açılan bir mesaj ekranı ile gösterilir.*/
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            else if (e.getActionCommand().equals("Şifreyi Çöz")) {
+                try {
+                    islem.sifreCoz(secilenDosyalar);
+                    JOptionPane.showMessageDialog(this, "Şifre çözümlendi.");
+                } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                         BadPaddingException | IllegalBlockSizeException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -366,9 +338,14 @@ public class Main extends JFrame implements ActionListener {
             else if (e.getActionCommand().equals("Sıkıştır")) {
                 zipDosyaAdi = JOptionPane.showInputDialog(this,
                         "Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz:");
+                /*jOptionPane sınıfından çağırılan showInputDialog() methodu ile arayüzde kullanıcının oluşturmak istediği
+                zipi isimlendirmesi için karşısına bir ekran açar ve kullanıcının girmiş olduğu zip ismini kullanarak zip
+                işlemlerini gerçekleştirir.*/
 
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
-                    zipButtonKontrol = true;
+                    zipButtonKontrolTum = true;
+                    /*Zip ismi oluşturulduğunu (yani dosyaların ziplenmek istendiğini) kontrol eder ve eğer zip adı
+                    oluşturulduysa zipButtonKontrol değişkenine true ataması yapar. (Daha sonra dosya taşımada kullanılacaktır.)*/
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
                     JOptionPane.showMessageDialog(this, "Tüm Dosyalar Sıkıştırıldı");
                 }
@@ -387,14 +364,21 @@ public class Main extends JFrame implements ActionListener {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
 
-                        if(zipButtonKontrol==true) {
+                        if(zipButtonKontrolTum) {
+                        /*'Taşı' butonuna basıldıktan sonra zipKontrolButton değişkeninin true olup olmadığını kontrol eder.
+                        Eğer true ise zip dosyasını taşır.*/
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "Tüm Dosyaları ve zipi taşıma başarılı!");
+                            zipButtonKontrolTum=false;
+                            /*Ziplenmiş dosyayı taşıdıktan zipKontrolButton değişkenine false atanır.
+                            (zipKontrolButton true kalırsa sadece zip dosyasını taşır, ardından başka bir taşıma işlemi yapmaz.)*/
                         }
                         else {
+                            /Eğer zipKontrolButton değişkeni true değilse yalnızca türü seçilen dosyaları taşır./
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "Tüm Dosyaları taşıma başarılı!");
                         }
-                        JOptionPane.showMessageDialog(this, "Tüm Dosyaları taşıma başarılı!");
                     }
 
                     else {
@@ -408,14 +392,24 @@ public class Main extends JFrame implements ActionListener {
         }
 
         else if (pdf.isSelected()) {
-            secilenDosyalar = tip.pdfDosya(kaynakDizin);
+            secilenDosyalar = tip.dosyaTipiSecme(kaynakDizin,".pdf");
 
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "PDF Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "Pdf Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            else if (e.getActionCommand().equals("Şifreyi Çöz")) {
+                try {
+                    islem.sifreCoz(secilenDosyalar);
+                    JOptionPane.showMessageDialog(this, "Şifre çözümlendi.");
+                } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                         BadPaddingException | IllegalBlockSizeException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -425,9 +419,9 @@ public class Main extends JFrame implements ActionListener {
                         "Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz:");
 
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
-                    zipButtonKontrol = true;
+                    zipButtonKontrolPdf = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "PDF Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "Pdf Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -444,14 +438,16 @@ public class Main extends JFrame implements ActionListener {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
 
-                        if(zipButtonKontrol==true) {
+                        if(zipButtonKontrolPdf) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "PDF Dosyaları ve zipi taşıma başarılı!");
+                            zipButtonKontrolPdf=false;
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "PDF Dosyaları taşıma başarılı!");
                         }
-                        JOptionPane.showMessageDialog(this, "PDF Dosyaları taşıma başarılı!");
                     }
 
                     else {
@@ -465,7 +461,7 @@ public class Main extends JFrame implements ActionListener {
         }
 
         else if (doc.isSelected()) {
-            secilenDosyalar = tip.docDosya(kaynakDizin);
+            secilenDosyalar = tip.dosyaTipiSecme(kaynakDizin,".docx");
 
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
@@ -477,14 +473,24 @@ public class Main extends JFrame implements ActionListener {
                 }
             }
 
+            else if (e.getActionCommand().equals("Şifreyi Çöz")) {
+                try {
+                    islem.sifreCoz(secilenDosyalar);
+                    JOptionPane.showMessageDialog(this, "Şifre çözümlendi.");
+                } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                         BadPaddingException | IllegalBlockSizeException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
             else if (e.getActionCommand().equals("Sıkıştır")) {
                 zipDosyaAdi = JOptionPane.showInputDialog(this,
                         "Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz:");
 
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
-                    zipButtonKontrol = true;
+                    zipButtonKontrolDoc = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "DOC Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "Doc Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -501,14 +507,16 @@ public class Main extends JFrame implements ActionListener {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
 
-                        if(zipButtonKontrol==true) {
+                        if(zipButtonKontrolDoc) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "DOC Dosyaları ve zipi taşıma başarılı!");
+                            zipButtonKontrolDoc=false;
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "DOC Dosyaları taşıma başarılı!");
                         }
-                        JOptionPane.showMessageDialog(this, "DOC Dosyaları taşıma başarılı!");
                     }
 
                     else {
@@ -522,14 +530,24 @@ public class Main extends JFrame implements ActionListener {
         }
 
         else if (txt.isSelected()) {
-            secilenDosyalar = tip.txtDosya(kaynakDizin);
+            secilenDosyalar = tip.dosyaTipiSecme(kaynakDizin,".txt");
 
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "TXT Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "Txt Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            else if (e.getActionCommand().equals("Şifreyi Çöz")) {
+                try {
+                    islem.sifreCoz(secilenDosyalar);
+                    JOptionPane.showMessageDialog(this, "Şifre çözümlendi.");
+                } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                         BadPaddingException | IllegalBlockSizeException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -539,9 +557,9 @@ public class Main extends JFrame implements ActionListener {
                         "Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz:");
 
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
-                    zipButtonKontrol = true;
+                    zipButtonKontrolTxt = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "TXT Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "Txt Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -558,16 +576,17 @@ public class Main extends JFrame implements ActionListener {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
 
-                        if(zipButtonKontrol==true) {
+                        if(zipButtonKontrolTxt) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "TXT Dosyaları ve zipi taşıma başarılı!");
+                            zipButtonKontrolTxt=false;
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "TXT Dosyaları taşıma başarılı!");
                         }
-                        JOptionPane.showMessageDialog(this, "TXT Dosyaları taşıma başarılı!");
                     }
-
                     else {
                         JOptionPane.showMessageDialog(this, "Hedef konum geçerli bir dizin değil!");
                     }
@@ -579,14 +598,24 @@ public class Main extends JFrame implements ActionListener {
         }
 
         else if (png.isSelected()) {
-            secilenDosyalar = tip.pngDosya(kaynakDizin);
+            secilenDosyalar = tip.dosyaTipiSecme(kaynakDizin,".png");
 
             if (e.getActionCommand().equals("Şifrele")) {
                 try {
                     islem.dosyaSifreleme(secilenDosyalar);
-                    JOptionPane.showMessageDialog(this, "PNG Dosyalar Şifrelendi");
+                    JOptionPane.showMessageDialog(this, "Png Dosyalar Şifrelendi");
                 } catch (IOException | IllegalBlockSizeException | BadPaddingException |
                          NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            else if (e.getActionCommand().equals("Şifreyi Çöz")) {
+                try {
+                    islem.sifreCoz(secilenDosyalar);
+                    JOptionPane.showMessageDialog(this, "Şifre çözümlendi.");
+                } catch (IOException | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException |
+                         BadPaddingException | IllegalBlockSizeException ex) {
                     throw new RuntimeException(ex);
                 }
             }
@@ -596,9 +625,9 @@ public class Main extends JFrame implements ActionListener {
                         "Oluşturmak istediğiniz zip adını sonuna '.zip' ifadesini ekleyerek giriniz:");
 
                 if (zipDosyaAdi != null && !zipDosyaAdi.isEmpty()) {
-                    zipButtonKontrol = true;
+                    zipButtonKontrolPng = true;
                     zipIslm.dosyaZipleme(zipDosyaAdi, secilenDosyalar, kaynakDizin);
-                    JOptionPane.showMessageDialog(this, "PNG Dosyalar Sıkıştırıldı");
+                    JOptionPane.showMessageDialog(this, "Png Dosyalar Sıkıştırıldı");
                 }
             }
 
@@ -614,14 +643,17 @@ public class Main extends JFrame implements ActionListener {
             else if (e.getActionCommand().equals("Taşı")) {
                 if (kaynak.exists() && kaynak.isDirectory()) {
                     if (hedef.exists() && hedef.isDirectory()) {
-                        if(zipButtonKontrol==true) {
+
+                        if(zipButtonKontrolPng) {
                             zipIslm.zipTasima(zipDosyaAdi,kaynakDizin,hedefDizin);
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "PNG Dosyaları ve zipi taşıma başarılı!");
+                            zipButtonKontrolPng=false;
                         }
                         else {
                             islem.dosyaTasima(secilenDosyalar,hedefDizin);
+                            JOptionPane.showMessageDialog(this, "PNG Dosyaları taşıma başarılı!");
                         }
-                        JOptionPane.showMessageDialog(this, "PNG Dosyaları taşıma başarılı!");
                     }
 
                     else {
@@ -637,11 +669,10 @@ public class Main extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(this, "Dosya türü seçin");
         }
     }
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new Main();
+                new Main2();
             }
         });
     }
